@@ -4,6 +4,7 @@
 #include<conio.h>
 #include <cctype>
 #include<fstream>
+#include <sstream>
 using namespace std;
 
 const int MAX_PRODUCTOS = 25;
@@ -100,13 +101,55 @@ void buscarProductoPorNombre(string productos[], int inventario[][2], int n, str
     }
 }
 
+void cargarInventarioDesdeArchivo(string productos[], int inventario[][2], int &cantidadProductos) {
+    ifstream archivo("inventario.txt");
+    string linea;
+    cantidadProductos = 0;
+
+    if (archivo.is_open()) {
+        getline(archivo, linea); // encabezado
+        getline(archivo, linea); // separador
+
+        while (getline(archivo, linea)) {
+            if (linea.empty()) continue;
+
+            string nombre;
+            int entradas, salidas, total;
+
+            istringstream ss(linea);
+            ss >> nombre >> entradas >> salidas >> total;
+
+            productos[cantidadProductos] = nombre;
+            inventario[cantidadProductos][0] = entradas;
+            inventario[cantidadProductos][1] = salidas;
+            cantidadProductos++;
+        }
+
+        archivo.close();
+        cout << "Inventario cargado desde archivo.\n";
+    } else {
+        cout << "No se encontró archivo. Se usará inventario por defecto.\n";
+    }
+}
 
 int main() {
-    string productos[MAX_PRODUCTOS] = {"Jabon", "Cloro", "Escoba", "Trapeador", "Desinfectante"};
+    string productos[MAX_PRODUCTOS];
     int inventario[MAX_PRODUCTOS][2] = {0}; // columna 0: entradas, columna 1: salidas
-    int opcion, cantidad, cantidadProductos = 5;
+    int cantidadProductos = 0;
     string nombreProducto;
     char continuar = 's';
+    int opcion, cantidad;
+
+    cargarInventarioDesdeArchivo(productos, inventario, cantidadProductos);
+    if (cantidadProductos == 0) {
+        productos[0] = "Jabon";
+        productos[1] = "Cloro";
+        productos[2] = "Escoba";
+        productos[3] = "Trapeador";
+        productos[4] = "Desinfectante";
+        cantidadProductos = 5;
+    }
+
     do {
         cout << "\n--- Menu de Inventario ---\n";
         cout << "1. Ver inventario\n";
